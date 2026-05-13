@@ -1423,8 +1423,27 @@ public final class PackUtilSharedState {
 
     public String getRealServerVersion(String address) {
         String normalizedAddress = normalizeServerAddress(address);
-        if (!normalizedAddress.isEmpty() && !normalizedAddress.equals(realServerVersionAddress)) return "";
-        return realServerVersion == null ? "" : realServerVersion;
+        if (realServerVersion == null || realServerVersion.isBlank()) return "";
+        if (normalizedAddress.isEmpty()) return realServerVersion;
+        String normalizedStored = normalizeServerAddress(realServerVersionAddress);
+        if (normalizedStored.isEmpty()) return realServerVersion;
+        String addrNoPort = stripPort(normalizedAddress);
+        String storedNoPort = stripPort(normalizedStored);
+        if (addrNoPort.equals(storedNoPort)) return realServerVersion;
+        if (normalizedAddress.equals(normalizedStored)) return realServerVersion;
+        return "";
+    }
+
+    private String stripPort(String address) {
+        if (address == null || address.isBlank()) return "";
+        int colonIdx = address.lastIndexOf(':');
+        if (colonIdx >= 0) {
+            String potentialPort = address.substring(colonIdx + 1);
+            if (potentialPort.matches("\\d+")) {
+                return address.substring(0, colonIdx);
+            }
+        }
+        return address;
     }
 
     public void setRealServerVersion(String address, String version) {

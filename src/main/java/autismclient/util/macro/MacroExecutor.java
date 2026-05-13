@@ -3032,10 +3032,7 @@ public class MacroExecutor {
         if (packet instanceof net.minecraft.network.protocol.game.ClientboundSystemChatPacket gameMessagePacket) {
             String raw = gameMessagePacket.content().getString();
             if (raw == null || raw.isBlank()) return null;
-            String sender = parseSenderFromRawLine(raw);
-            String message = parseMessageFromRawLine(raw, false);
-            ChatSource source = inferChatSourceFromRawLine(raw, sender);
-            return buildChatCapture(sender, message, raw, gameMessagePacket.content(), source);
+            return buildChatCapture("", raw, raw, gameMessagePacket.content(), ChatSource.PLAYER);
         }
 
         if (packet instanceof net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket profilelessChatMessagePacket) {
@@ -3044,8 +3041,7 @@ public class MacroExecutor {
             String text = extractTextValue(message);
             if (text == null || text.isBlank()) return null;
             String sender = extractChatName(chatType);
-            ChatSource source = inferChatSource(sender, text, text);
-            return buildChatCapture(sender, text, null, extractTextComponent(message), source);
+            return buildChatCapture(sender, text, null, extractTextComponent(message), ChatSource.PLAYER);
         }
 
         if (packet instanceof net.minecraft.network.protocol.game.ClientboundPlayerChatPacket chatMessagePacket) {
@@ -3085,8 +3081,7 @@ public class MacroExecutor {
 
             String sender = senderValue instanceof UUID uuid ? resolvePlayerName(uuid) : null;
             if (sender == null || sender.isBlank()) sender = extractChatName(serializedParameters);
-            ChatSource source = inferChatSource(sender, message, message);
-            return buildChatCapture(sender, message, null, messageComponent, source);
+            return buildChatCapture(sender, message, null, messageComponent, ChatSource.PLAYER);
         }
 
         return null;
@@ -3097,21 +3092,17 @@ public class MacroExecutor {
         if (cleanMessage.isBlank()) return null;
         String cleanSender = sanitizeChatText(sender);
         String cleanDisplay = sanitizeChatText(displayText);
-        if (startsWithServerPrefix(cleanMessage)) cleanMessage = trimServerPrefix(cleanMessage);
-        if (startsWithServerPrefix(cleanDisplay)) cleanDisplay = "[Server] " + trimServerPrefix(cleanDisplay);
-        if (isServerSenderLabel(cleanSender)) cleanSender = "[Server]";
-        if (isServerMarked(cleanSender, cleanMessage, cleanDisplay)) cleanSender = "[Server]";
         Component rendered = literalizeTextComponent(displayComponent);
         String display = cleanDisplay;
         if (rendered == null || rendered.getString().isBlank()) {
-            rendered = cleanSender.isBlank() || isServerSenderLabel(cleanSender)
-                    ? Component.literal("[Server] " + cleanMessage)
+            rendered = cleanSender.isBlank()
+                    ? Component.literal(cleanMessage)
                     : Component.literal("<" + cleanSender + "> ").append(Component.literal(cleanMessage));
         }
         if (display == null || display.isBlank()) {
             display = sanitizeChatText(rendered.getString());
         }
-        ChatSource resolvedSource = source != null ? source : inferChatSource(cleanSender, cleanMessage, display);
+        ChatSource resolvedSource = source != null ? source : ChatSource.PLAYER;
         return new ChatCapture(cleanSender, cleanMessage, sanitizeChatText(display), rendered, resolvedSource);
     }
 
@@ -3157,74 +3148,6 @@ public class MacroExecutor {
             out.append(ch);
         }
         return out.toString();
-    }
-
-    private static String parseSenderFromRawLine(String raw) {
-        if (raw == null) return "";
-        String text = raw.trim();
-        if (startsWithServerPrefix(text)) return "[Server]";
-        if (text.startsWith("<")) {
-            int end = text.indexOf("> ");
-            if (end > 1) return text.substring(1, end).trim();
-        }
-        int colon = text.indexOf(": ");
-        if (colon > 0 && colon <= 48) return text.substring(0, colon).trim();
-        return "";
-    }
-
-    private static String parseMessageFromRawLine(String raw, boolean keepWholeIfUnknown) {
-        if (raw == null) return "";
-        String text = raw.trim();
-        if (startsWithServerPrefix(text)) {
-            String trimmed = text.substring("[server]".length()).trim();
-            if (!trimmed.isEmpty()) return trimmed;
-        }
-        if (text.startsWith("<")) {
-            int end = text.indexOf("> ");
-            if (end > 1 && end + 2 < text.length()) return text.substring(end + 2).trim();
-        }
-        int colon = text.indexOf(": ");
-        if (colon > 0 && colon <= 48 && colon + 2 < text.length()) return text.substring(colon + 2).trim();
-        return keepWholeIfUnknown ? text : text;
-    }
-
-    private static ChatSource inferChatSourceFromRawLine(String raw, String parsedSender) {
-        if (raw == null || raw.isBlank()) return ChatSource.SERVER;
-        String text = raw.trim();
-        if (startsWithServerPrefix(text) || isServerSenderLabel(parsedSender)) return ChatSource.SERVER;
-        if (text.startsWith("<")) {
-            int end = text.indexOf("> ");
-            if (end > 1) return ChatSource.PLAYER;
-        }
-        return parsedSender == null || sanitizeChatText(parsedSender).isBlank() ? ChatSource.SERVER : ChatSource.PLAYER;
-    }
-
-    private static boolean startsWithServerPrefix(String text) {
-        String normalized = normalizeChatText(sanitizeChatText(text));
-        return normalized.equals("server")
-                || normalized.startsWith("server ")
-                || normalized.startsWith("server:");
-    }
-
-    private static String trimServerPrefix(String text) {
-        if (!startsWithServerPrefix(text)) return sanitizeChatText(text);
-        return sanitizeChatText(text.substring("[server]".length()).trim());
-    }
-
-    private static boolean isServerSenderLabel(String sender) {
-        String normalized = normalizeChatText(sanitizeChatText(sender));
-        return normalized.equals("server");
-    }
-
-    private static boolean isServerMarked(String sender, String message, String displayText) {
-        return isServerSenderLabel(sender) || startsWithServerPrefix(message) || startsWithServerPrefix(displayText);
-    }
-
-    private static ChatSource inferChatSource(String sender, String message, String displayText) {
-        String cleanSender = sanitizeChatText(sender);
-        if (isServerMarked(cleanSender, message, displayText)) return ChatSource.SERVER;
-        if (cleanSender.isBlank()) return ChatSource.SERVER;
-        return ChatSource.PLAYER;
     }
 
     private static boolean isLikelyPlayerSender(String sender) {

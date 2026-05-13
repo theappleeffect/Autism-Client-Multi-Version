@@ -76,12 +76,12 @@ public final class PackUiToastStack {
             int highlight = PackUiRenderContext.applyAlpha(0x24FFFFFF, alpha);
             int textColor = PackUiRenderContext.applyAlpha(0xFFF4F4F4, alpha);
 
-            graphics.fill(drawX, drawY, drawX + toastWidth, drawY + HEIGHT, fill);
-            graphics.fill(drawX, drawY, drawX + toastWidth, drawY + 1, border);
-            graphics.fill(drawX, drawY + HEIGHT - 1, drawX + toastWidth, drawY + HEIGHT, border);
-            graphics.fill(drawX, drawY, drawX + 1, drawY + HEIGHT, border);
-            graphics.fill(drawX + toastWidth - 1, drawY, drawX + toastWidth, drawY + HEIGHT, border);
-            graphics.fill(drawX + 1, drawY + 1, drawX + toastWidth - 1, drawY + 2, highlight);
+            PackUiText.fill(graphics, drawX, drawY, drawX + toastWidth, drawY + HEIGHT, fill);
+            PackUiText.fill(graphics, drawX, drawY, drawX + toastWidth, drawY + 1, border);
+            PackUiText.fill(graphics, drawX, drawY + HEIGHT - 1, drawX + toastWidth, drawY + HEIGHT, border);
+            PackUiText.fill(graphics, drawX, drawY, drawX + 1, drawY + HEIGHT, border);
+            PackUiText.fill(graphics, drawX + toastWidth - 1, drawY, drawX + toastWidth, drawY + HEIGHT, border);
+            PackUiText.fill(graphics, drawX + 1, drawY + 1, drawX + toastWidth - 1, drawY + 2, highlight);
             int textY = PackUiSizing.alignTextY(drawY, HEIGHT, bodyHeight, theme.bodyTextNudge());
             PackUiText.draw(graphics, font, trimmed, bodyFont, textColor, drawX + 8, textY, false);
 

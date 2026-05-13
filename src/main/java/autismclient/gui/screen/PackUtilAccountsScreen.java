@@ -485,12 +485,17 @@ public class PackUtilAccountsScreen extends Screen {
             }
             PackUiScrollbar.Metrics scrollbar = accountScrollbarMetrics(displayAccounts.size());
             PackUiScrollbar.draw(graphics, scrollbar, scrollbar.contains(virtualMouseX, virtualMouseY), accountScrollbarDragging);
-            toastStack.render(graphics, this.font, THEME, listX(), 8, listWidth());
         } finally {
             PackUiText.endManagedLayer(graphics);
         }
 
         super.extractRenderState(graphics, virtualMouseX, virtualMouseY, delta);
+        PackUiText.beginManagedLayer(graphics);
+        try {
+            toastStack.render(graphics, this.font, THEME, listX(), 8, listWidth());
+        } finally {
+            PackUiText.endManagedLayer(graphics);
+        }
         } finally {
             PackUtilUiScale.popOverlayScale(graphics);
         }
@@ -560,8 +565,13 @@ public class PackUtilAccountsScreen extends Screen {
     private void render3dSkin(GuiGraphicsExtractor graphics, PlayerSkin skin, int x0, int y0, int x1, int y1) {
         if (widePlayerModel == null || slimPlayerModel == null) return;
         PlayerModel model = skin.model().name().equalsIgnoreCase("slim") ? slimPlayerModel : widePlayerModel;
-        float scale = 0.97F * Math.max(1, y1 - y0) / 2.125F;
-        graphics.skin(model, skin.body().texturePath(), scale, previewRotationX, currentPreviewRotationY(), -1.0625F, x0, y0, x1, y1);
+        float drawScale = PackUtilUiScale.getOverlayDrawScale();
+        int scaledX0 = Math.round(x0 * drawScale);
+        int scaledY0 = Math.round(y0 * drawScale);
+        int scaledX1 = Math.round(x1 * drawScale);
+        int scaledY1 = Math.round(y1 * drawScale);
+        float scale = 0.97F * Math.max(1, scaledY1 - scaledY0) / 2.125F;
+        graphics.skin(model, skin.body().texturePath(), scale, previewRotationX, currentPreviewRotationY(), -1.0625F, scaledX0, scaledY0, scaledX1, scaledY1);
     }
 
     private float currentPreviewRotationY() {

@@ -1569,7 +1569,28 @@ public class PackUtilServerInfoOverlay extends PackUtilOverlayBase {
 
     private String getRealServerVersion() {
         String version = PackUtilSharedState.get().getRealServerVersion(getDisplayedServerAddress());
-        return version == null || version.isBlank() ? "--" : version;
+        if (version != null && !version.isBlank()) return version;
+        String brand = getLiveBrand();
+        if (brand != null && !brand.isBlank() && !"--".equals(brand)) {
+            String extracted = extractVersionFromBrand(brand);
+            if (extracted != null) return extracted;
+        }
+        return "--";
+    }
+
+    private String extractVersionFromBrand(String brand) {
+        if (brand == null || brand.isBlank()) return null;
+        String lower = brand.toLowerCase(Locale.ROOT);
+        int dashIdx = lower.indexOf('-');
+        if (dashIdx >= 0 && dashIdx + 1 < brand.length()) {
+            String afterDash = brand.substring(dashIdx + 1);
+            int spaceIdx = afterDash.indexOf(' ');
+            if (spaceIdx >= 0) {
+                return afterDash.substring(0, spaceIdx);
+            }
+            return afterDash;
+        }
+        return null;
     }
 
     private void renderHeaderControls(GuiGraphicsExtractor context, PackUiViewport viewport, float uiMouseX, float uiMouseY, float delta, boolean active) {

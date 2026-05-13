@@ -22,12 +22,19 @@ public abstract class PackUtilClientConfigurationNetworkHandlerMixin {
             serverAddress = client.getCurrentServer().ip;
         }
 
+        String capturedVersion = null;
         for (KnownPack knownPack : packet.knownPacks()) {
             if (knownPack == null) continue;
-            if (knownPack.isVanilla() && "core".equals(knownPack.id())) {
+            if ("core".equals(knownPack.id())) {
                 PackUtilSharedState.get().setRealServerVersion(serverAddress, knownPack.version());
                 return;
             }
+            if (capturedVersion == null && !knownPack.id().isBlank() && !knownPack.version().isBlank()) {
+                capturedVersion = knownPack.version();
+            }
+        }
+        if (capturedVersion != null) {
+            PackUtilSharedState.get().setRealServerVersion(serverAddress, capturedVersion);
         }
     }
 }

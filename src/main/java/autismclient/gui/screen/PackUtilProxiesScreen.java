@@ -119,7 +119,7 @@ public class PackUtilProxiesScreen extends Screen {
             if (selectedProxy == null) addProxy();
             else updateProxy();
         }).setVariant(PackUiOverlayButton.Variant.PRIMARY));
-        buttons.add(PackUiOverlayButton.create(formX + 200, 114, 64, 20, Component.literal(selectedProxy == null ? "Clear" : "Cancel"), b -> clearProxySelection()).setVariant(PackUiOverlayButton.Variant.SECONDARY));
+        buttons.add(PackUiOverlayButton.create(formX + 200, 114, 64, 20, Component.literal(selectedProxy == null ? "Clear" : "Cancel"), b -> clearProxySelection()).setVariant(selectedProxy == null ? PackUiOverlayButton.Variant.SECONDARY : PackUiOverlayButton.Variant.DANGER));
         buttons.add(PackUiOverlayButton.create(formX + 272, 114, 72, 20, Component.literal(PackUtilProxyManager.get().isRefreshing() ? "Refreshing" : "Refresh"), b -> refreshProxies()).setVariant(PackUiOverlayButton.Variant.SECONDARY));
         buttons.add(PackUiOverlayButton.create(formX + 352, 114, 72, 20, Component.literal("Cleanup"), b -> cleanupProxies()).setVariant(PackUiOverlayButton.Variant.SECONDARY));
         buttons.add(PackUiOverlayButton.create(formX + 432, 114, 64, 20, Component.literal("Import"), b -> importProxies()).setVariant(PackUiOverlayButton.Variant.SECONDARY));

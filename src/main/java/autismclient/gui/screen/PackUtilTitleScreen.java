@@ -320,7 +320,7 @@ public class PackUtilTitleScreen extends Screen {
             Screen modsScreen = (Screen) createMethod.invoke(null, this);
             this.minecraft.setScreen(modsScreen);
         } catch (Exception e) {
-            // ModMenu not available or failed to open
+
         }
     }
 
@@ -332,7 +332,7 @@ public class PackUtilTitleScreen extends Screen {
             open.setAccessible(true);
             open.invoke(companion);
         } catch (Exception e) {
-            // Essential not available or failed to open
+
         }
     }
 
