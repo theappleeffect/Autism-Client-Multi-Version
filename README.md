@@ -5,12 +5,6 @@ If something breaks or doesn't function properly on certain versions, feel free 
 
 Supported Versions:
 26.1.2 - Original
-1.21.11 - 
-1.21.10 - 
-1.21.9 - 
-1.21.8 - 
-1.21.7 - 
-1.21.6 - 
-1.21.4 - 
+1.21.4 and 1.21.6 - 1.21.11
 
 Huge thanks to Melon for making the mod! https://github.com/AutismDevelopment/Autism-Client
